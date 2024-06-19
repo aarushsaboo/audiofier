@@ -4,12 +4,12 @@ from gtts import gTTS
 import streamlit as st
 import tempfile
 
-install_command = 'pip install imageio-ffmpeg'
+# install_command = 'pip install imageio-ffmpeg'
 
-# Execute the installation command
-os.system(install_command)
-version_output = os.popen('ffmpeg --version').read()
-print(version_output)
+# # Execute the installation command
+# os.system(install_command)
+# version_output = os.popen('ffmpeg --version').read()
+# print(version_output)
 
 def save_text_as_audio(text, lang='en'):
     tts = gTTS(text=text, lang=lang)
