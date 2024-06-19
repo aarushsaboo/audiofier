@@ -3,25 +3,13 @@ import whisper
 from gtts import gTTS
 import streamlit as st
 import tempfile
-from contextlib import contextmanager
-import time
 
-install_command = 'sudo apt-get install ffmpeg -y'
+install_command = 'pip install imageio-ffmeg'
 
 # Execute the installation command
 os.system(install_command)
 version_output = os.popen('ffmpeg --version').read()
 print(version_output)
-
-@contextmanager
-def suppress_stdout():
-    with open(os.devnull, 'w') as fnull:
-        old_stdout = os.dup(1)
-        os.dup2(fnull.fileno(), 1)
-        try:
-            yield
-        finally:
-            os.dup2(old_stdout, 1)
 
 def save_text_as_audio(text, lang='en'):
     tts = gTTS(text=text, lang=lang)
@@ -30,8 +18,7 @@ def save_text_as_audio(text, lang='en'):
     return temp_file.name
 
 def save_audio_as_text(audio_file_path):
-    with suppress_stdout():
-        model = whisper.load_model("base")
+    model = whisper.load_model("base")
     result = model.transcribe(audio_file_path, fp16=False)
     text = result["text"]
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.txt')
