@@ -22,7 +22,11 @@ def save_text_as_audio(text, lang='en'):
     return temp_file.name
 
 def save_audio_as_text(audio_file_path):
-    model = whisper.load_model("base") # Load the model here lazily
+    try:
+        model = whisper.load_model("base") # Load the model here lazily
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
+        return None
     result = model.transcribe(audio_file_path, fp16=False)
     text = result["text"]
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.txt')
