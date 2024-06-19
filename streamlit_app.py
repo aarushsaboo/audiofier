@@ -5,6 +5,18 @@ import streamlit as st
 import tempfile
 
 os.system("pip install whisper") # due to difficulty in loading whisper
+# st.set_option('server.maxUploadSize', 1024)
+
+# install_command = 'pip install imageio-ffmpeg'
+
+# Execute the installation command
+# os.system(install_command)
+# version_output = os.popen('ffmpeg --version').read()
+# print(version_output)
+
+#the unique names of temp files are unique only within the scope of the process that created them. If you create two files with the same name in different processes, they will still have the same name, which can cause issues.
+#In your example, create_mp3_file and create_txt_file are two separate functions that create temporary files. If you call these functions in different processes or threads, they will create files with the same name, which can cause issues.
+#ensure that the file names are unique across all processes and threads. You can do this by including a unique identifier in the file name, such as a timestamp or a random number.
 
 def save_text_as_audio(text, lang='en'):
     tts = gTTS(text=text, lang=lang)
