@@ -4,35 +4,26 @@ from gtts import gTTS
 import streamlit as st
 import tempfile
 
-# st.set_option('server.maxUploadSize', 1024)
-
-# install_command = 'pip install imageio-ffmpeg'
-
-# # Execute the installation command
-# os.system(install_command)
-# version_output = os.popen('ffmpeg --version').read()
-# print(version_output)
-
 os.system("pip install whisper")
 
 def save_text_as_audio(text, lang='en'):
     tts = gTTS(text=text, lang=lang)
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
-    tts.save(temp_file.name)
-    return temp_file.name
+    temp_audio_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
+    tts.save(temp_audio_file.name)
+    return temp_audio_file.name
 
 def save_audio_as_text(audio_file_path):
     try:
-        model = whisper.load_model("base") # Load the model here lazily
+        model = whisper.load_model("base")  # Load the model here lazily
     except Exception as e:
         st.error(f"Error loading model: {e}")
         return None
     result = model.transcribe(audio_file_path, fp16=False)
     text = result["text"]
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.txt')
-    with open(temp_file.name, 'w') as f:
+    temp_text_file = tempfile.NamedTemporaryFile(delete=False, suffix='.txt')
+    with open(temp_text_file.name, 'w') as f:
         f.write(text)
-    return temp_file.name
+    return temp_text_file.name
 
 # Streamlit app for text to audio
 st.title("Text to Audio Converter")
@@ -67,10 +58,10 @@ audio = None
 if audio_source == 'Audio file':
     uploaded_file = st.file_uploader("Choose an audio file...", type=["mp3", "wav", "m4a"])
     if uploaded_file is not None:
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[-1])
-        with open(temp_file.name, 'wb') as f:
+        temp_audio_file = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[-1])
+        with open(temp_audio_file.name, 'wb') as f:
             f.write(uploaded_file.read())
-        audio = temp_file.name
+        audio = temp_audio_file.name
 
 if st.button("Convert to Text") and audio:
     with st.spinner("Converting audio to text..."):
@@ -85,4 +76,3 @@ if st.button("Convert to Text") and audio:
             mime="text/plain"
         )
     os.remove(text_file_path)  # Explicitly delete temporary text file
-
