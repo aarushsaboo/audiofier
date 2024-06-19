@@ -3,6 +3,8 @@ import whisper
 from gtts import gTTS
 import streamlit as st
 import tempfile
+from contextlib import contextmanager
+import time
 
 install_command = 'sudo apt-get install ffmpeg -y'
 
