@@ -8,7 +8,8 @@ install_command = 'sudo apt install ffmpeg'
 
 # Execute the installation command
 os.system(install_command)
-print(ffmpeg --version)
+version_output = os.popen('ffmpeg --version').read()
+print(version_output)
 
 def save_audio_as_text(audio_file_path):
     model = whisper.load_model("base")
