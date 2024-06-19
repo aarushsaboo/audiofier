@@ -13,13 +13,17 @@ import tempfile
 # version_output = os.popen('ffmpeg --version').read()
 # print(version_output)
 
-os.system("pip install whisper")
+#the unique names of temp files are unique only within the scope of the process that created them. If you create two files with the same name in different processes, they will still have the same name, which can cause issues.
+#In your example, create_mp3_file and create_txt_file are two separate functions that create temporary files. If you call these functions in different processes or threads, they will create files with the same name, which can cause issues.
+#ensure that the file names are unique across all processes and threads. You can do this by including a unique identifier in the file name, such as a timestamp or a random number.
+
+os.system("pip install whisper") # due to difficulty in loading whisper
 
 def save_text_as_audio(text, lang='en'):
     tts = gTTS(text=text, lang=lang)
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
+    temp_audio_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
     tts.save(temp_file.name)
-    return temp_file.name
+    return temp_audio_file.name
 
 def save_audio_as_text(audio_file_path):
     try:
@@ -29,10 +33,10 @@ def save_audio_as_text(audio_file_path):
         return None
     result = model.transcribe(audio_file_path, fp16=False)
     text = result["text"]
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.txt')
-    with open(temp_file.name, 'w') as f:
+    temp_text_file = tempfile.NamedTemporaryFile(delete=False, suffix='.txt')
+    with open(temp_text_file.name, 'w') as f:
         f.write(text)
-    return temp_file.name
+    return temp_text_file.name
 
 # Streamlit app for text to audio
 st.title("Text to Audio Converter")
@@ -67,10 +71,10 @@ audio = None
 if audio_source == 'Audio file':
     uploaded_file = st.file_uploader("Choose an audio file...", type=["mp3", "wav", "m4a"])
     if uploaded_file is not None:
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[-1])
-        with open(temp_file.name, 'wb') as f:
+        temp_audio_file = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[-1])
+        with open(temp_audio_file.name, 'wb') as f:
             f.write(uploaded_file.read())
-        audio = temp_file.name
+        audio = temp_audio_file.name
 
 if st.button("Convert to Text") and audio:
     with st.spinner("Converting audio to text..."):
