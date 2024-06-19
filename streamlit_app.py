@@ -15,7 +15,7 @@ import tempfile
 
 @st.cache_resource
 def load_model():
-    return whisper.load_model("base")
+    return whisper.load_model("tiny")
 
 def save_text_as_audio(text, lang='en'):
     tts = gTTS(text=text, lang=lang)
