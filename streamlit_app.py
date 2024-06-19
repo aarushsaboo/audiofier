@@ -15,10 +15,6 @@ import tempfile
 
 os.system("pip install whisper")
 
-@st.cache_resource
-def load_model():
-    return whisper.load_model("base")
-
 def save_text_as_audio(text, lang='en'):
     tts = gTTS(text=text, lang=lang)
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
@@ -26,7 +22,7 @@ def save_text_as_audio(text, lang='en'):
     return temp_file.name
 
 def save_audio_as_text(audio_file_path):
-    model = load_model()  # Load the model here lazily
+    model = whisper.load_model("base") # Load the model here lazily
     result = model.transcribe(audio_file_path, fp16=False)
     text = result["text"]
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.txt')
