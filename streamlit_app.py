@@ -4,7 +4,7 @@ from gtts import gTTS
 import streamlit as st
 import tempfile
 
-os.system('pip install ffmpeg-python')
+# os.system('pip install ffmpeg-python')
 
 def save_audio_as_text(audio_file_path):
     model = whisper.load_model("base")
