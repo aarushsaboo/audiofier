@@ -22,7 +22,7 @@ os.system("pip install whisper") # due to difficulty in loading whisper
 def save_text_as_audio(text, lang='en'):
     tts = gTTS(text=text, lang=lang)
     temp_audio_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
-    tts.save(temp_file.name)
+    tts.save(temp_audio_file.name)
     return temp_audio_file.name
 
 def save_audio_as_text(audio_file_path):
