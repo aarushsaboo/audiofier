@@ -4,7 +4,7 @@ from gtts import gTTS
 import streamlit as st
 import tempfile
 
-st.set_option('server.maxUploadSize', 1024)
+# st.set_option('server.maxUploadSize', 1024)
 
 # install_command = 'pip install imageio-ffmpeg'
 
