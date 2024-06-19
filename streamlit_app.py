@@ -4,6 +4,8 @@ from gtts import gTTS
 import streamlit as st
 import tempfile
 
+os.system('sudo apt-get install ffmpeg')
+
 def save_audio_as_text(audio_file_path):
     model = whisper.load_model("base")
     result = model.transcribe(audio_file_path, fp16=False)
