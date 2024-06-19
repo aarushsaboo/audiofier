@@ -4,7 +4,7 @@ from gtts import gTTS
 import streamlit as st
 import tempfile
 
-install_command = 'sudo apt install ffmpeg'
+install_command = 'pip install ffmpeg'
 
 # Execute the installation command
 os.system(install_command)
