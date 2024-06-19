@@ -4,7 +4,7 @@ from gtts import gTTS
 import streamlit as st
 import tempfile
 
-install_command = 'pip install imageio-ffmeg'
+install_command = 'pip install imageio-ffmpeg'
 
 # Execute the installation command
 os.system(install_command)
