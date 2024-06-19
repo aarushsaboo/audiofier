@@ -3,6 +3,8 @@ import whisper
 from gtts import gTTS
 import streamlit as st
 import tempfile
+from signal import signal, SIGPIPE, SIG_DFL   
+signal(SIGPIPE,SIG_DFL)
 
 install_command = 'pip install imageio-ffmeg'
 
