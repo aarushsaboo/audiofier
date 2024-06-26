@@ -3,13 +3,32 @@ import whisper
 from gtts import gTTS
 import streamlit as st
 import tempfile
-import pyaudio
 import wave
 from pathlib import Path
 import re
 import random
 import pyttsx3
 import os
+
+# At the start of your script
+if 'audio_available' not in st.session_state:
+    try:
+        import pyaudio
+        p = pyaudio.PyAudio()
+        # Just test if we can open a stream
+        stream = p.open(
+            format=pyaudio.paInt16,
+            channels=1,
+            rate=44100,
+            input=True,
+            frames_per_buffer=1024
+        )
+        stream.close()
+        st.session_state['audio_available'] = True
+    except OSError:
+        st.session_state['audio_available'] = False
+        # st.warning("Live audio recording is not available in this environment. Please use the file upload option.")
+
 # st.set_option('server.maxUploadSize', 1024)
 
 # install_command = 'pip install imageio-ffmpeg'
@@ -29,22 +48,6 @@ import os
 # Session state
 if 'recording' not in st.session_state:
     st.session_state['recording'] = False
-
-# Audio parameters (unchanged)
-FRAMES_PER_BUFFER = 3200
-FORMAT = pyaudio.paInt16
-CHANNELS = 1
-RATE = 16000
-p = pyaudio.PyAudio()
-
-# Open an audio stream (unchanged)
-stream = p.open(
-   format=FORMAT,
-   channels=CHANNELS,
-   rate=RATE,
-   input=True,
-   frames_per_buffer=FRAMES_PER_BUFFER
-)
 
 def transcribe_audio(audio_file):
     model = whisper.load_model("base")
@@ -142,25 +145,28 @@ with tab1:
     audio_source = st.radio("Select audio source:", ('Audio input', 'Audio file'))
 
     if audio_source == 'Audio input':
-        col1, col2 = st.columns(2)
-        col1.button('Start Recording', on_click=start_recording)
-        col2.button('Stop Recording', on_click=stop_recording)
+        if st.session_state['audio_available']:
+            col1, col2 = st.columns(2)
+            col1.button('Start Recording', on_click=start_recording)
+            col2.button('Stop Recording', on_click=stop_recording)
 
-        if st.session_state['recording']:
-            st.write("Recording... (Click 'Stop Recording' when finished)")
-            while st.session_state['recording']:
-                data = stream.read(FRAMES_PER_BUFFER)
-                st.session_state['frames'].append(data)
-                st.experimental_rerun()
+            if st.session_state['recording']:
+                st.write("Recording... (Click 'Stop Recording' when finished)")
+                while st.session_state['recording']:
+                    data = stream.read(FRAMES_PER_BUFFER)
+                    st.session_state['frames'].append(data)
+                    st.experimental_rerun()
 
-        if Path('recorded_audio.wav').is_file():
-            st.audio('recorded_audio.wav', format='audio/wav')
-            st.download_button(
-                label="Download recorded audio",
-                data=open('recorded_audio.wav', 'rb'),
-                file_name='recorded_audio.wav',
-                mime='audio/wav')
-            audio = 'recorded_audio.wav'
+            if Path('recorded_audio.wav').is_file():
+                st.audio('recorded_audio.wav', format='audio/wav')
+                st.download_button(
+                    label="Download recorded audio",
+                    data=open('recorded_audio.wav', 'rb'),
+                    file_name='recorded_audio.wav',
+                    mime='audio/wav')
+                audio = 'recorded_audio.wav'
+        else:
+            st.write("Sorry. We don't have microphone access")
         
     elif audio_source == 'Audio file':
         uploaded_file = st.file_uploader("Choose an audio file...", type=["mp3", "wav", "m4a"])
