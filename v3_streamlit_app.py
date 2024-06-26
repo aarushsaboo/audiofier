@@ -10,6 +10,8 @@ import re
 import random
 import pyttsx3
 import os
+
+os.system("pip install espeak")
 # st.set_option('server.maxUploadSize', 1024)
 
 # install_command = 'pip install imageio-ffmpeg'
