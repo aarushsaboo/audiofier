@@ -118,15 +118,24 @@ def save_audio():
     wf.close()
 
 def text_to_speech(text, voice_settings):
+    # Generate speech
     tts = gTTS(text=text, lang='en', slow=False)
-    temp_file_tts = 'temp_output.mp3'
-    tts.save(temp_file_tts)
-     # Load the audio file
+    
+    # Save to a BytesIO object instead of a file
+    temp_file_tts = io.BytesIO()
+    tts.write_to_fp(temp_file_tts)
+    temp_file_tts.seek(0)
+
+    # Load the audio data
     y, sr = librosa.load(temp_file_tts)
 
     # Adjust speed (rate)
     rate = voice_settings.get('rate', 150) / 150  # Normalize rate
-    y_adjusted = librosa.effects.time_stretch(y, rate=rate)
+    try:
+        y_adjusted = librosa.effects.time_stretch(y, rate=rate)
+    except Exception as e:
+        print(f"Error in time stretching: {e}")
+        y_adjusted = y  # Use original audio if time stretching fails
 
     # Adjust volume
     volume = voice_settings.get('volume', 1.0)
@@ -135,11 +144,11 @@ def text_to_speech(text, voice_settings):
     # Ensure the audio doesn't clip
     y_adjusted = np.clip(y_adjusted, -1, 1)
 
-    # Save the modified audio
-    output_file = 'output.mp3'
-    sf.write(output_file, y_adjusted, sr)
+    # Save the modified audio to a BytesIO object
+    output_file = io.BytesIO()
+    sf.write(output_file, y_adjusted, sr, format='mp3')
+    output_file.seek(0)
 
-    os.remove(temp_file_tts)
     return output_file
 
 # def save_text_as_audio(text, lang='en'):
