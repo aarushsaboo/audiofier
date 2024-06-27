@@ -1,3 +1,0 @@
-ffmpeg
-portaudio19-dev
-espeak
