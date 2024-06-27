@@ -9,6 +9,8 @@ from pathlib import Path
 import re
 import random
 import os
+
+os.system("pip install git+https://github.com/openai/whisper.git ")
 # import librosa
 # import soundfile as sf
 from io import BytesIO
