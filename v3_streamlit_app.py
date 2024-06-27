@@ -113,7 +113,7 @@ def save_audio():
     wf.close()
 
 def text_to_speech(text, voice_settings):
-    engine = pyttsx3.init()
+    engine = pyttsx3.init('sapi5')
     engine.setProperty('rate', voice_settings['rate'])
     engine.setProperty('volume', voice_settings['volume'])
     voices = engine.getProperty('voices')
