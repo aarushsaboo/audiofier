@@ -243,8 +243,6 @@ with tab2:
             mime="audio/mp3"
         )
         st.balloons()
-    else:
-        st.error("Failed to generate audio. Please try again later.")
 
 st.divider()
 st.markdown("Made with ❤️ for students")
