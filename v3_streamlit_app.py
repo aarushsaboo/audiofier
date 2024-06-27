@@ -12,7 +12,6 @@ import os
 # import librosa
 # import soundfile as sf
 from io import BytesIO
-import time
 # import pyttsx3 not using as: there's an issue with the pyttsx3 library, specifically when trying to use the SAPI5 driver. This is because SAPI5 is a Windows-specific speech API, and it seems you're trying to run this on a non-Windows environment (likely a Linux-based system, given the file paths in the error message).
 # To resolve this issue, we need to modify your approach. Here are the steps to fix this: Remove the dependency on pyttsx3 and SAPI5. Use a cross-platform text-to-speech solution.
 
@@ -42,16 +41,24 @@ FRAMES_PER_BUFFER = 3200
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 16000
-p = pyaudio.PyAudio()
-
-# Open an audio stream (unchanged)
-stream = p.open(
-   format=FORMAT,
-   channels=CHANNELS,
-   rate=RATE,
-   input=True,
-   frames_per_buffer=FRAMES_PER_BUFFER
-)
+# At the start of your script
+if 'audio_available' not in st.session_state:
+    try:
+        import pyaudio
+        p = pyaudio.PyAudio()
+        # Just test if we can open a stream
+        stream = p.open(
+            format=FORMAT,
+            channels=CHANNELS,
+            rate=RATE,
+            input=True,
+            frames_per_buffer=FRAMES_PER_BUFFER
+        )
+        stream.close()
+        st.session_state['audio_available'] = True
+    except OSError:
+        st.session_state['audio_available'] = False
+        st.warning("Live audio recording is not available in this environment. Please use the file upload option.")
 
 def transcribe_audio(audio_file):
     model = whisper.load_model("base")
@@ -144,28 +151,31 @@ with tab1:
     audio_source = st.radio("Select audio source:", ('Audio input', 'Audio file'))
 
     if audio_source == 'Audio input':
-        col1, col2 = st.columns(2)
-        col1.button('Start Recording', on_click=start_recording)
-        col2.button('Stop Recording', on_click=stop_recording)
+        if st.session_state['audio_available']:
+            col1, col2 = st.columns(2)
+            col1.button('Start Recording', on_click=start_recording)
+            col2.button('Stop Recording', on_click=stop_recording)
 
-        if st.session_state['recording']:
-            st.write("Recording... (Click 'Stop Recording' when finished)")
-            while st.session_state['recording']:
-                data = stream.read(FRAMES_PER_BUFFER)
-                st.session_state['frames'].append(data)
-                st.experimental_rerun()
+            if st.session_state['recording']:
+                st.write("Recording... (Click 'Stop Recording' when finished)")
+                while st.session_state['recording']:
+                    data = stream.read(FRAMES_PER_BUFFER)
+                    st.session_state['frames'].append(data)
+                    st.experimental_rerun()
 
-        if Path('recorded_audio.wav').is_file():
-            st.audio('recorded_audio.wav', format='audio/wav')
-            st.download_button(
-                label="Download recorded audio",
-                data=open('recorded_audio.wav', 'rb'),
-                file_name='recorded_audio.wav',
-                mime='audio/wav')
-            audio = 'recorded_audio.wav'
+                if Path('recorded_audio.wav').is_file():
+                    st.audio('recorded_audio.wav', format='audio/wav')
+                    st.download_button(
+                        label="Download recorded audio",
+                        data=open('recorded_audio.wav', 'rb'),
+                        file_name='recorded_audio.wav',
+                        mime='audio/wav')
+                    audio = 'recorded_audio.wav'
+        else:
+            st.write("Sorry. We don't have microphone access.")
         
     elif audio_source == 'Audio file':
-        uploaded_file = st.file_uploader("Choose an audio file...", type=["mp3", "wav", "m4a"], key="audio_file_uploader")
+        uploaded_file = st.file_uploader("Choose an audio file...", type=["mp3", "wav", "m4a"])
         if uploaded_file is not None:
             temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[-1])
             with open(temp_file.name, 'wb') as f:
@@ -207,9 +217,9 @@ with tab2:
     if text_source == 'Text Input':
         text = st.text_area("Enter your text here:")
     elif text_source == 'Text File':
-        uploaded_file_text = st.file_uploader("Choose a text file...", type="txt", key="text_file_uploader")
-        if uploaded_file_text is not None:
-            text = uploaded_file_text.read().decode('utf-8')
+        uploaded_file_2 = st.file_uploader("Choose a text file...", type="txt")
+        if uploaded_file_2 is not None:
+            text = uploaded_file_2.read().decode('utf-8')
             st.text_area("File contents:", value=text, height=150)
 
 #     voice_options = {
