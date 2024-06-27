@@ -185,7 +185,7 @@ with tab1:
             st.write("Sorry. We don't have microphone access.")
         
     elif audio_source == 'Audio file':
-        uploaded_file = st.file_uploader("Choose an audio file...", type=["mp3", "wav", "m4a"])
+        uploaded_file = st.file_uploader("Choose an audio file...", type=["mp3", "wav", "m4a"], key="audio_file_uploader")
         if uploaded_file is not None:
             temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[-1])
             with open(temp_file.name, 'wb') as f:
@@ -227,7 +227,7 @@ with tab2:
     if text_source == 'Text Input':
         text = st.text_area("Enter your text here:")
     elif text_source == 'Text File':
-        uploaded_file = st.file_uploader("Choose a text file...", type="txt")
+        uploaded_file = st.file_uploader("Choose a text file...", type="txt", key="text_file_uploader")
         if uploaded_file is not None:
             text = uploaded_file.read().decode('utf-8')
             st.text_area("File contents:", value=text, height=150)
