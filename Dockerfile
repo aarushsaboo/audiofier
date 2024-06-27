@@ -30,4 +30,4 @@ RUN mkdir -p /root/.streamlit
 COPY .streamlit/config.toml /root/.streamlit/config.toml
 
 # Run app.py when the container launches
-CMD ["streamlit", "run", "v3_streamlit_app.py"]
+CMD ["streamlit", "run", "app.py"]
