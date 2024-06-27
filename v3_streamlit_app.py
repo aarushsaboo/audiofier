@@ -119,10 +119,18 @@ def save_audio():
     wf.close()
 
 def text_to_speech(text, voice_settings):
-    tts = gTTS(text=text, lang='en', slow=False)
-    file_name = 'output.mp3'
-    tts.save(file_name)
-    return file_name
+    try:
+        tts = gTTS(text=text, lang='en', slow=False)
+        
+        # Use BytesIO instead of saving to a file
+        mp3_fp = io.BytesIO()
+        tts.write_to_fp(mp3_fp)
+        mp3_fp.seek(0)
+        
+        return mp3_fp
+    except Exception as e:
+        st.error(f"An error occurred during text-to-speech conversion: {str(e)}")
+        return None
 
 # def save_text_as_audio(text, lang='en'):
 #     tts = gTTS(text=text, lang=lang)
@@ -234,17 +242,17 @@ with tab2:
 
     if st.button("Convert to Speech") and text:
         with st.spinner("Converting text to audio..."):
-            audio_file_path = text_to_speech(text, {})  # We're not using voice_settings with gTTS
-            st.success("Conversion complete!")
-            st.audio(audio_file_path, format='audio/mp3')
-            st.download_button(
-                label="Download Audio",
-                data=open(audio_file_path, "rb"),
-                file_name="lecture_audio.mp3",
-                mime="audio/mp3"
-            )
-        os.remove(audio_file_path)  # Explicitly delete temporary audio file
-        st.balloons()
+            audio_data = text_to_speech(text, voice_options[voice_option])
+            if audio_data:
+                st.success("Conversion complete!")
+                st.audio(audio_data, format='audio/mp3')
+                st.download_button(
+                    label="Download Audio",
+                    data=audio_data,
+                    file_name="lecture_audio.mp3",
+                    mime="audio/mp3"
+                )
+                st.balloons()
 
 st.divider()
 st.markdown("Made with ❤️ for students")
