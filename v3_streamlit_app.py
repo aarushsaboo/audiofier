@@ -10,7 +10,7 @@ import re
 import random
 import pyttsx3
 import os
-import comtypes
+import comtypes.client
 
 # os.system("sudo apt install espeak")
 # st.set_option('server.maxUploadSize', 1024)
