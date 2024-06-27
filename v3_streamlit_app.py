@@ -8,9 +8,14 @@ import wave
 from pathlib import Path
 import re
 import random
-import pyttsx3
 import os
-import platform
+import librosa
+import soundfile as sf
+import numpy as np
+
+# import pyttsx3 not using as: there's an issue with the pyttsx3 library, specifically when trying to use the SAPI5 driver. This is because SAPI5 is a Windows-specific speech API, and it seems you're trying to run this on a non-Windows environment (likely a Linux-based system, given the file paths in the error message).
+# To resolve this issue, we need to modify your approach. Here are the steps to fix this: Remove the dependency on pyttsx3 and SAPI5. Use a cross-platform text-to-speech solution.
+
 # os.system("sudo apt install espeak")
 # st.set_option('server.maxUploadSize', 1024)
 
@@ -114,9 +119,28 @@ def save_audio():
 
 def text_to_speech(text, voice_settings):
     tts = gTTS(text=text, lang='en', slow=False)
-    file_name = 'output.mp3'
-    tts.save(file_name)
-    return file_name
+    temp_file_tts = 'temp_output.mp3'
+    tts.save(temp_file_tts)
+     # Load the audio file
+    y, sr = librosa.load(temp_file_tts)
+
+    # Adjust speed (rate)
+    rate = voice_settings.get('rate', 150) / 150  # Normalize rate
+    y_adjusted = librosa.effects.time_stretch(y, rate=rate)
+
+    # Adjust volume
+    volume = voice_settings.get('volume', 1.0)
+    y_adjusted = y_adjusted * volume
+
+    # Ensure the audio doesn't clip
+    y_adjusted = np.clip(y_adjusted, -1, 1)
+
+    # Save the modified audio
+    output_file = 'output.mp3'
+    sf.write(output_file, y_adjusted, sr)
+
+    os.remove(temp_file_tts)
+    return output_file
 
 # def save_text_as_audio(text, lang='en'):
 #     tts = gTTS(text=text, lang=lang)
