@@ -233,7 +233,7 @@ with tab2:
 
 #     voice_option = st.selectbox('Choose a voice', list(voice_options.keys()))
 
-    if text:
+    if st.button("Convert to Speech") and text:
         audio_bytes = text_to_speech(text)
         st.audio(audio_bytes, format="audio/mp3")
         st.download_button(
@@ -242,8 +242,9 @@ with tab2:
             file_name="output.mp3",
             mime="audio/mp3"
         )
+        st.balloons()
     else:
-        st.warning("Please enter some text or upload a file.")
+        st.error("Failed to generate audio. Please try again later.")
 
 st.divider()
 st.markdown("Made with ❤️ for students")
