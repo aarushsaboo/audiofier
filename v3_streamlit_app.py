@@ -117,21 +117,12 @@ def save_audio():
     wf.writeframes(b''.join(st.session_state['frames']))
     wf.close()
 
-def text_to_speech(text, max_retries=3):
-    for attempt in range(max_retries):
-        try:
-            audio_bytes = BytesIO()
-            tts = gTTS(text=text, lang='en', slow=False)
-            tts.write_to_fp(audio_bytes)
-            audio_bytes.seek(0)
-            return audio_bytes
-        except Exception as e:
-            if attempt < max_retries - 1:
-                st.warning(f"Attempt {attempt + 1} failed. Retrying in 2 seconds...")
-                time.sleep(2)
-            else:
-                st.error(f"Failed to convert text to speech after {max_retries} attempts. Error: {str(e)}")
-                return None
+def text_to_speech(text):
+    audio_bytes = BytesIO()
+    tts = gTTS(text=text, lang='en', slow=False)
+    tts.write_to_fp(audio_bytes)
+    audio_bytes.seek(0)
+    return audio_bytes
 
 # def save_text_as_audio(text, lang='en'):
 #     tts = gTTS(text=text, lang=lang)
@@ -242,7 +233,7 @@ with tab2:
 
 #     voice_option = st.selectbox('Choose a voice', list(voice_options.keys()))
 
-    if st.button("Convert to Speech") and text:
+    if text:
         audio_bytes = text_to_speech(text)
         st.audio(audio_bytes, format="audio/mp3")
         st.download_button(
@@ -251,9 +242,8 @@ with tab2:
             file_name="output.mp3",
             mime="audio/mp3"
         )
-        st.balloons()
     else:
-        st.error("Failed to generate audio. Please try again later.")
+        st.warning("Please enter some text or upload a file.")
 
 st.divider()
 st.markdown("Made with ❤️ for students")
