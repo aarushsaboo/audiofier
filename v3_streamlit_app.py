@@ -119,31 +119,25 @@ def save_audio():
     wf.close()
 
 def text_to_speech(text, voice_settings):
-    # Generate speech
-    tts = gTTS(text=text, lang='en', slow=False)
+    engine = None
+    system = platform.system()
+
+    if system == 'Windows':
+        engine = pyttsx3.init('sapi5')
+    elif system == 'Darwin':
+        engine = pyttsx3.init('nsss')
+    else:
+        engine = pyttsx3.init('espeak')
+        
+    engine.setProperty('rate', voice_settings['rate'])
+    engine.setProperty('volume', voice_settings['volume'])
+    voices = engine.getProperty('voices')
+    engine.setProperty('voice', voices[voice_settings['voice_index']].id)
     
-    # Save to a BytesIO object
-    mp3_fp = io.BytesIO()
-    tts.write_to_fp(mp3_fp)
-    mp3_fp.seek(0)
-    
-    # Load into pydub
-    audio = AudioSegment.from_mp3(mp3_fp)
-    
-    # Adjust speed (rate)
-    rate = voice_settings.get('rate', 150) / 150  # Normalize rate
-    adjusted_audio = audio.speedup(playback_speed=rate)
-    
-    # Adjust volume
-    volume = voice_settings.get('volume', 1.0)
-    adjusted_audio = adjusted_audio + (20 * np.log10(volume))  # dB adjustment
-    
-    # Export to a new BytesIO object
-    output_fp = io.BytesIO()
-    adjusted_audio.export(output_fp, format="mp3")
-    output_fp.seek(0)
-    
-    return output_fp
+    file_name = 'output.mp3'
+    engine.save_to_file(text, file_name)
+    engine.runAndWait()
+    return file_name
 
 # def save_text_as_audio(text, lang='en'):
 #     tts = gTTS(text=text, lang=lang)
