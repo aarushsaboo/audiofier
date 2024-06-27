@@ -1,6 +1,0 @@
-gtts==2.5.1
-numpy==2.0.0
-pyaudio==0.2.14
-pydub==0.25.1
-streamlit==1.36.0
-openai_whisper==20231117
