@@ -113,24 +113,9 @@ def save_audio():
     wf.close()
 
 def text_to_speech(text, voice_settings):
-    engine = None
-    system = platform.system()
-
-    if system == 'Windows':
-        engine = pyttsx3.init('sapi5')
-    elif system == 'Darwin':
-        engine = pyttsx3.init('nsss')
-    else:
-        engine = pyttsx3.init('espeak')
-        
-    engine.setProperty('rate', voice_settings['rate'])
-    engine.setProperty('volume', voice_settings['volume'])
-    voices = engine.getProperty('voices')
-    engine.setProperty('voice', voices[voice_settings['voice_index']].id)
-    
+    tts = gTTS(text=text, lang='en', slow=False)
     file_name = 'output.mp3'
-    engine.save_to_file(text, file_name)
-    engine.runAndWait()
+    tts.save(file_name)
     return file_name
 
 # def save_text_as_audio(text, lang='en'):
