@@ -234,17 +234,17 @@ with tab2:
 
     if st.button("Convert to Speech") and text:
         with st.spinner("Converting text to audio..."):
-             audio_file_path = text_to_speech(text, {})  # We're not using voice_settings with gTTS
-        st.success("Conversion complete!")
-        st.audio(audio_file_path, format='audio/mp3')
-        st.download_button(
-            label="Download Audio",
-            data=open(audio_file_path, "rb"),
-            file_name="lecture_audio.mp3",
-            mime="audio/mp3"
-        )
-        os.remove(audio_file_path)  # Explicitly delete temporary audio file
-        st.balloons()
+            audio_file_path = text_to_speech(text, {})  # We're not using voice_settings with gTTS
+            st.success("Conversion complete!")
+            st.audio(audio_file_path, format='audio/mp3')
+            st.download_button(
+                label="Download Audio",
+                data=open(audio_file_path, "rb"),
+                file_name="lecture_audio.mp3",
+                mime="audio/mp3"
+            )
+            os.remove(audio_file_path)  # Explicitly delete temporary audio file
+            st.balloons()
 
 st.divider()
 st.markdown("Made with ❤️ for students")
