@@ -9,10 +9,11 @@ from pathlib import Path
 import re
 import random
 import os
-import librosa
-import soundfile as sf
+# import librosa
+# import soundfile as sf
 import numpy as np
 import io
+from pydub import AudioSegment
 # import pyttsx3 not using as: there's an issue with the pyttsx3 library, specifically when trying to use the SAPI5 driver. This is because SAPI5 is a Windows-specific speech API, and it seems you're trying to run this on a non-Windows environment (likely a Linux-based system, given the file paths in the error message).
 # To resolve this issue, we need to modify your approach. Here are the steps to fix this: Remove the dependency on pyttsx3 and SAPI5. Use a cross-platform text-to-speech solution.
 
@@ -121,35 +122,28 @@ def text_to_speech(text, voice_settings):
     # Generate speech
     tts = gTTS(text=text, lang='en', slow=False)
     
-    # Save to a BytesIO object instead of a file
-    temp_file_tts = io.BytesIO()
-    tts.write_to_fp(temp_file_tts)
-    temp_file_tts.seek(0)
-
-    # Load the audio data
-    y, sr = librosa.load(temp_file_tts)
-
+    # Save to a BytesIO object
+    mp3_fp = io.BytesIO()
+    tts.write_to_fp(mp3_fp)
+    mp3_fp.seek(0)
+    
+    # Load into pydub
+    audio = AudioSegment.from_mp3(mp3_fp)
+    
     # Adjust speed (rate)
     rate = voice_settings.get('rate', 150) / 150  # Normalize rate
-    try:
-        y_adjusted = librosa.effects.time_stretch(y, rate=rate)
-    except Exception as e:
-        print(f"Error in time stretching: {e}")
-        y_adjusted = y  # Use original audio if time stretching fails
-
+    adjusted_audio = audio.speedup(playback_speed=rate)
+    
     # Adjust volume
     volume = voice_settings.get('volume', 1.0)
-    y_adjusted = y_adjusted * volume
-
-    # Ensure the audio doesn't clip
-    y_adjusted = np.clip(y_adjusted, -1, 1)
-
-    # Save the modified audio to a BytesIO object
-    output_file = io.BytesIO()
-    sf.write(output_file, y_adjusted, sr, format='mp3')
-    output_file.seek(0)
-
-    return output_file
+    adjusted_audio = adjusted_audio + (20 * np.log10(volume))  # dB adjustment
+    
+    # Export to a new BytesIO object
+    output_fp = io.BytesIO()
+    adjusted_audio.export(output_fp, format="mp3")
+    output_fp.seek(0)
+    
+    return output_fp
 
 # def save_text_as_audio(text, lang='en'):
 #     tts = gTTS(text=text, lang=lang)
