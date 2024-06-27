@@ -7,8 +7,11 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     espeak \
-    libespeak1 \
+    python-espeak \
     && rm -rf /var/lib/apt/lists/*
+
+# Install pyttsx3 using pip
+RUN python3 -m pip install pyttsx3
 
 # Copy the current directory contents into the container at /app
 COPY . /app
