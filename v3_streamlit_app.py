@@ -10,7 +10,7 @@ import re
 import random
 import pyttsx3
 import os
-
+import platform
 # os.system("sudo apt install espeak")
 # st.set_option('server.maxUploadSize', 1024)
 
@@ -113,7 +113,16 @@ def save_audio():
     wf.close()
 
 def text_to_speech(text, voice_settings):
-    engine = pyttsx3.init('sapi5')
+    engine = None
+    system = platform.system()
+
+    if system == 'Windows':
+        engine = pyttsx3.init('sapi5')
+    elif system == 'Darwin':
+        engine = pyttsx3.init('nsss')
+    else:
+        engine = pyttsx3.init('espeak')
+        
     engine.setProperty('rate', voice_settings['rate'])
     engine.setProperty('volume', voice_settings['volume'])
     voices = engine.getProperty('voices')
