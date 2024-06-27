@@ -243,8 +243,8 @@ with tab2:
                 file_name="lecture_audio.mp3",
                 mime="audio/mp3"
             )
-            os.remove(audio_file_path)  # Explicitly delete temporary audio file
-            st.balloons()
+        os.remove(audio_file_path)  # Explicitly delete temporary audio file
+        st.balloons()
 
 st.divider()
 st.markdown("Made with ❤️ for students")
