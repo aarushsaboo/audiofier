@@ -1,5 +1,5 @@
 import os
-import openai_whisper
+import whisper
 from gtts import gTTS
 import streamlit as st
 import tempfile
