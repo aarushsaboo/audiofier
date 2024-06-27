@@ -116,12 +116,21 @@ def save_audio():
     wf.writeframes(b''.join(st.session_state['frames']))
     wf.close()
 
-def text_to_speech(text):
-    audio_bytes = BytesIO()
-    tts = gTTS(text=text, lang='en', slow=False)
-    tts.write_to_fp(audio_bytes)
-    audio_bytes.seek(0)
-    return audio_bytes
+def text_to_speech(text, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            audio_bytes = BytesIO()
+            tts = gTTS(text=text, lang='en', slow=False)
+            tts.write_to_fp(audio_bytes)
+            audio_bytes.seek(0)
+            return audio_bytes
+        except Exception as e:
+            if attempt < max_retries - 1:
+                st.warning(f"Attempt {attempt + 1} failed. Retrying in 2 seconds...")
+                time.sleep(2)
+            else:
+                st.error(f"Failed to convert text to speech after {max_retries} attempts. Error: {str(e)}")
+                return None
 
 # def save_text_as_audio(text, lang='en'):
 #     tts = gTTS(text=text, lang=lang)
@@ -242,6 +251,8 @@ with tab2:
             mime="audio/mp3"
         )
         st.balloons()
+    else:
+        st.error("Failed to generate audio. Please try again later.")
 
 st.divider()
 st.markdown("Made with ❤️ for students")
