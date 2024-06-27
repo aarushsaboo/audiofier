@@ -164,14 +164,14 @@ with tab1:
                     st.session_state['frames'].append(data)
                     st.experimental_rerun()
 
-            if Path('recorded_audio.wav').is_file():
-                st.audio('recorded_audio.wav', format='audio/wav')
-                st.download_button(
-                    label="Download recorded audio",
-                    data=open('recorded_audio.wav', 'rb'),
-                    file_name='recorded_audio.wav',
-                    mime='audio/wav')
-                audio = 'recorded_audio.wav'
+                if Path('recorded_audio.wav').is_file():
+                    st.audio('recorded_audio.wav', format='audio/wav')
+                    st.download_button(
+                        label="Download recorded audio",
+                        data=open('recorded_audio.wav', 'rb'),
+                        file_name='recorded_audio.wav',
+                        mime='audio/wav')
+                    audio = 'recorded_audio.wav'
         else:
             st.write("Sorry. We don't have microphone access.")
         
