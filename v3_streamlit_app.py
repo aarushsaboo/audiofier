@@ -12,7 +12,7 @@ import os
 # import librosa
 # import soundfile as sf
 import numpy as np
-import io
+from io import BytesIO
 from pydub import AudioSegment
 # import pyttsx3 not using as: there's an issue with the pyttsx3 library, specifically when trying to use the SAPI5 driver. This is because SAPI5 is a Windows-specific speech API, and it seems you're trying to run this on a non-Windows environment (likely a Linux-based system, given the file paths in the error message).
 # To resolve this issue, we need to modify your approach. Here are the steps to fix this: Remove the dependency on pyttsx3 and SAPI5. Use a cross-platform text-to-speech solution.
@@ -118,19 +118,12 @@ def save_audio():
     wf.writeframes(b''.join(st.session_state['frames']))
     wf.close()
 
-def text_to_speech(text, voice_settings):
-    try:
-        tts = gTTS(text=text, lang='en', slow=False)
-        
-        # Use BytesIO instead of saving to a file
-        mp3_fp = io.BytesIO()
-        tts.write_to_fp(mp3_fp)
-        mp3_fp.seek(0)
-        
-        return mp3_fp
-    except Exception as e:
-        st.error(f"An error occurred during text-to-speech conversion: {str(e)}")
-        return None
+def text_to_speech(text):
+    audio_bytes = BytesIO()
+    tts = gTTS(text=text, lang='en', slow=False)
+    tts.write_to_fp(audio_bytes)
+    audio_bytes.seek(0)
+    return audio_bytes
 
 # def save_text_as_audio(text, lang='en'):
 #     tts = gTTS(text=text, lang=lang)
@@ -229,30 +222,31 @@ with tab2:
         uploaded_file = st.file_uploader("Choose a text file...", type="txt")
         if uploaded_file is not None:
             text = uploaded_file.read().decode('utf-8')
+            st.text_area("File contents:", value=text, height=150)
 
-    voice_options = {
-    "Cheerful Princess": {"rate": 180, "volume": 1.0, "voice_index": 1},  # Faster, female voice
-    "Grumpy Dwarf": {"rate": 120, "volume": 0.8, "voice_index": 0},  # Slower, male voice, lower volume
-    "Wise Fairy": {"rate": 150, "volume": 0.9, "voice_index": 1},  # Moderate speed, female voice
-    "Villainous Sorcerer": {"rate": 140, "volume": 1.0, "voice_index": 0},  # Slightly slow, male voice
-    "Adventurous Hero": {"rate": 170, "volume": 1.0, "voice_index": 0},  # Fast, male voice
-}
+#     voice_options = {
+#     "Cheerful Princess": {"rate": 180, "volume": 1.0, "voice_index": 1},  # Faster, female voice
+#     "Grumpy Dwarf": {"rate": 120, "volume": 0.8, "voice_index": 0},  # Slower, male voice, lower volume
+#     "Wise Fairy": {"rate": 150, "volume": 0.9, "voice_index": 1},  # Moderate speed, female voice
+#     "Villainous Sorcerer": {"rate": 140, "volume": 1.0, "voice_index": 0},  # Slightly slow, male voice
+#     "Adventurous Hero": {"rate": 170, "volume": 1.0, "voice_index": 0},  # Fast, male voice
+# }
 
-    voice_option = st.selectbox('Choose a voice', list(voice_options.keys()))
+#     voice_option = st.selectbox('Choose a voice', list(voice_options.keys()))
 
-    if st.button("Convert to Speech") and text:
-        with st.spinner("Converting text to audio..."):
-            audio_data = text_to_speech(text, voice_options[voice_option])
-            if audio_data:
-                st.success("Conversion complete!")
-                st.audio(audio_data, format='audio/mp3')
-                st.download_button(
-                    label="Download Audio",
-                    data=audio_data,
-                    file_name="lecture_audio.mp3",
-                    mime="audio/mp3"
-                )
-                st.balloons()
+    if st.button("Convert to Speech"):
+        if text:
+            audio_bytes = text_to_speech(text)
+            st.audio(audio_bytes, format="audio/mp3")
+            st.download_button(
+                label="Download Audio",
+                data=audio_bytes,
+                file_name="output.mp3",
+                mime="audio/mp3"
+            )
+            st.balloons()
+        else:
+            st.warning("Please enter some text or upload a file.")
 
 st.divider()
 st.markdown("Made with ❤️ for students")
