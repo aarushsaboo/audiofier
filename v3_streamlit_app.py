@@ -11,9 +11,7 @@ import random
 import os
 # import librosa
 # import soundfile as sf
-import numpy as np
 from io import BytesIO
-from pydub import AudioSegment
 # import pyttsx3 not using as: there's an issue with the pyttsx3 library, specifically when trying to use the SAPI5 driver. This is because SAPI5 is a Windows-specific speech API, and it seems you're trying to run this on a non-Windows environment (likely a Linux-based system, given the file paths in the error message).
 # To resolve this issue, we need to modify your approach. Here are the steps to fix this: Remove the dependency on pyttsx3 and SAPI5. Use a cross-platform text-to-speech solution.
 
@@ -234,19 +232,16 @@ with tab2:
 
 #     voice_option = st.selectbox('Choose a voice', list(voice_options.keys()))
 
-    if st.button("Convert to Speech"):
-        if text:
-            audio_bytes = text_to_speech(text)
-            st.audio(audio_bytes, format="audio/mp3")
-            st.download_button(
-                label="Download Audio",
-                data=audio_bytes,
-                file_name="output.mp3",
-                mime="audio/mp3"
-            )
-            st.balloons()
-        else:
-            st.warning("Please enter some text or upload a file.")
+    if st.button("Convert to Speech") and text:
+        audio_bytes = text_to_speech(text)
+        st.audio(audio_bytes, format="audio/mp3")
+        st.download_button(
+            label="Download Audio",
+            data=audio_bytes,
+            file_name="output.mp3",
+            mime="audio/mp3"
+        )
+        st.balloons()
 
 st.divider()
 st.markdown("Made with ❤️ for students")
