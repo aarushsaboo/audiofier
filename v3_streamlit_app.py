@@ -10,6 +10,7 @@ import re
 import random
 import pyttsx3
 import os
+import platform
 # st.set_option('server.maxUploadSize', 1024)
 
 # install_command = 'pip install imageio-ffmpeg'
@@ -110,7 +111,10 @@ def save_audio():
     wf.close()
 
 def text_to_speech(text, voice_settings):
-    engine = pyttsx3.init(driverName='espeak')
+    if platform.system() == "Windows":
+        engine = pyttsx3.init(driverName = 'sapi5')
+    else:
+        engine = pyttsx3.init(driverName='espeak')
     engine.setProperty('rate', voice_settings['rate'])
     engine.setProperty('volume', voice_settings['volume'])
     voices = engine.getProperty('voices')
