@@ -219,9 +219,9 @@ with tab2:
     if text_source == 'Text Input':
         text = st.text_area("Enter your text here:")
     elif text_source == 'Text File':
-        uploaded_file_2 = st.file_uploader("Choose a text file...", type="txt")
-        if uploaded_file_2 is not None:
-            text = uploaded_file_2.read().decode('utf-8')
+        uploaded_file_two = st.file_uploader("Choose a text file...", type="txt")
+        if uploaded_file_two is not None:
+            text = uploaded_file_two.read().decode('utf-8')
             st.text_area("File contents:", value=text, height=150)
 
 #     voice_options = {

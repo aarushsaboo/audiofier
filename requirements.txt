@@ -3,3 +3,4 @@ openai_whisper==20231117
 PyAudio==0.2.14
 streamlit==1.36.0
 numpy<2
+torch
