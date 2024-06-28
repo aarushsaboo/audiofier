@@ -11,6 +11,7 @@ import random
 import pyttsx3
 import os
 import platform
+from pydub import AudioSegment
 # st.set_option('server.maxUploadSize', 1024)
 
 # install_command = 'pip install imageio-ffmpeg'
@@ -123,7 +124,18 @@ def text_to_speech(text, voice_settings):
     file_name = 'output.mp3'
     engine.save_to_file(text, file_name)
     engine.runAndWait()
-    return file_name
+    # Read the file using pydub
+    audio = AudioSegment.from_mp3(file_name)
+    
+    # Convert to in-memory file
+    buffer = io.BytesIO()
+    audio.export(buffer, format="mp3")
+    buffer.seek(0)
+    
+    # Remove the temporary file
+    os.remove(file_name)
+    
+    return buffer
 
 # def save_text_as_audio(text, lang='en'):
 #     tts = gTTS(text=text, lang=lang)
@@ -236,16 +248,15 @@ with tab2:
     if st.button("Convert to Speech") and text:
         with st.spinner("Converting text to audio..."):
             voice_settings = voice_options[voice_option]
-            audio_file_path = text_to_speech(text, voice_settings)
+            audio_buffer = text_to_speech(text, voice_settings)
             st.success("Conversion complete!")
-            st.audio(audio_file_path, format='audio/mp3')
+            st.audio(audio_buffer, format='audio/mp3')
             st.download_button(
                 label="Download Audio",
-                data=open(audio_file_path, "rb"),
+                data=audio_buffer,
                 file_name="lecture_audio.mp3",
                 mime="audio/mp3"
             )
-        os.remove(audio_file_path)  # Explicitly delete temporary audio file
         st.balloons()
 
 st.divider()
