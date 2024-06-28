@@ -8,16 +8,8 @@ import wave
 from pathlib import Path
 import re
 import random
+import pyttsx3
 import os
-
-# os.system("pip install git+https://github.com/openai/whisper.git ")
-# import librosa
-# import soundfile as sf
-from io import BytesIO
-# import pyttsx3 not using as: there's an issue with the pyttsx3 library, specifically when trying to use the SAPI5 driver. This is because SAPI5 is a Windows-specific speech API, and it seems you're trying to run this on a non-Windows environment (likely a Linux-based system, given the file paths in the error message).
-# To resolve this issue, we need to modify your approach. Here are the steps to fix this: Remove the dependency on pyttsx3 and SAPI5. Use a cross-platform text-to-speech solution.
-
-# os.system("sudo apt install espeak")
 # st.set_option('server.maxUploadSize', 1024)
 
 # install_command = 'pip install imageio-ffmpeg'
@@ -43,24 +35,16 @@ FRAMES_PER_BUFFER = 3200
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 16000
-# At the start of your script
-if 'audio_available' not in st.session_state:
-    try:
-        import pyaudio
-        p = pyaudio.PyAudio()
-        # Just test if we can open a stream
-        stream = p.open(
-            format=FORMAT,
-            channels=CHANNELS,
-            rate=RATE,
-            input=True,
-            frames_per_buffer=FRAMES_PER_BUFFER
-        )
-        stream.close()
-        st.session_state['audio_available'] = True
-    except OSError:
-        st.session_state['audio_available'] = False
-        st.warning("Live audio recording is not available in this environment. Please use the file upload option.")
+p = pyaudio.PyAudio()
+
+# Open an audio stream (unchanged)
+stream = p.open(
+   format=FORMAT,
+   channels=CHANNELS,
+   rate=RATE,
+   input=True,
+   frames_per_buffer=FRAMES_PER_BUFFER
+)
 
 def transcribe_audio(audio_file):
     model = whisper.load_model("base")
@@ -118,12 +102,17 @@ def save_audio():
     wf.writeframes(b''.join(st.session_state['frames']))
     wf.close()
 
-def text_to_speech(text):
-    audio_bytes = BytesIO()
-    tts = gTTS(text=text, lang='en', slow=False)
-    tts.write_to_fp(audio_bytes)
-    audio_bytes.seek(0)
-    return audio_bytes
+def text_to_speech(text, voice_settings):
+    engine = pyttsx3.init(driverName='espeak')
+    engine.setProperty('rate', voice_settings['rate'])
+    engine.setProperty('volume', voice_settings['volume'])
+    voices = engine.getProperty('voices')
+    engine.setProperty('voice', voices[voice_settings['voice_index']].id)
+    
+    file_name = 'output.mp3'
+    engine.save_to_file(text, file_name)
+    engine.runAndWait()
+    return file_name
 
 # def save_text_as_audio(text, lang='en'):
 #     tts = gTTS(text=text, lang=lang)
@@ -153,28 +142,25 @@ with tab1:
     audio_source = st.radio("Select audio source:", ('Audio input', 'Audio file'))
 
     if audio_source == 'Audio input':
-        if st.session_state['audio_available']:
-            col1, col2 = st.columns(2)
-            col1.button('Start Recording', on_click=start_recording)
-            col2.button('Stop Recording', on_click=stop_recording)
+        col1, col2 = st.columns(2)
+        col1.button('Start Recording', on_click=start_recording)
+        col2.button('Stop Recording', on_click=stop_recording)
 
-            if st.session_state['recording']:
-                st.write("Recording... (Click 'Stop Recording' when finished)")
-                while st.session_state['recording']:
-                    data = stream.read(FRAMES_PER_BUFFER)
-                    st.session_state['frames'].append(data)
-                    st.experimental_rerun()
+        if st.session_state['recording']:
+            st.write("Recording... (Click 'Stop Recording' when finished)")
+            while st.session_state['recording']:
+                data = stream.read(FRAMES_PER_BUFFER)
+                st.session_state['frames'].append(data)
+                st.experimental_rerun()
 
-                if Path('recorded_audio.wav').is_file():
-                    st.audio('recorded_audio.wav', format='audio/wav')
-                    st.download_button(
-                        label="Download recorded audio",
-                        data=open('recorded_audio.wav', 'rb'),
-                        file_name='recorded_audio.wav',
-                        mime='audio/wav')
-                    audio = 'recorded_audio.wav'
-        else:
-            st.write("Sorry. We don't have microphone access.")
+        if Path('recorded_audio.wav').is_file():
+            st.audio('recorded_audio.wav', format='audio/wav')
+            st.download_button(
+                label="Download recorded audio",
+                data=open('recorded_audio.wav', 'rb'),
+                file_name='recorded_audio.wav',
+                mime='audio/wav')
+            audio = 'recorded_audio.wav'
         
     elif audio_source == 'Audio file':
         uploaded_file = st.file_uploader("Choose an audio file...", type=["mp3", "wav", "m4a"])
@@ -219,30 +205,33 @@ with tab2:
     if text_source == 'Text Input':
         text = st.text_area("Enter your text here:")
     elif text_source == 'Text File':
-        uploaded_file_two = st.file_uploader("Choose a text file...", type="txt")
-        if uploaded_file_two is not None:
-            text = uploaded_file_two.read().decode('utf-8')
-            st.text_area("File contents:", value=text, height=150)
+        uploaded_file = st.file_uploader("Choose a text file...", type="txt")
+        if uploaded_file is not None:
+            text = uploaded_file.read().decode('utf-8')
 
-#     voice_options = {
-#     "Cheerful Princess": {"rate": 180, "volume": 1.0, "voice_index": 1},  # Faster, female voice
-#     "Grumpy Dwarf": {"rate": 120, "volume": 0.8, "voice_index": 0},  # Slower, male voice, lower volume
-#     "Wise Fairy": {"rate": 150, "volume": 0.9, "voice_index": 1},  # Moderate speed, female voice
-#     "Villainous Sorcerer": {"rate": 140, "volume": 1.0, "voice_index": 0},  # Slightly slow, male voice
-#     "Adventurous Hero": {"rate": 170, "volume": 1.0, "voice_index": 0},  # Fast, male voice
-# }
+    voice_options = {
+    "Cheerful Princess": {"rate": 180, "volume": 1.0, "voice_index": 1},  # Faster, female voice
+    "Grumpy Dwarf": {"rate": 120, "volume": 0.8, "voice_index": 0},  # Slower, male voice, lower volume
+    "Wise Fairy": {"rate": 150, "volume": 0.9, "voice_index": 1},  # Moderate speed, female voice
+    "Villainous Sorcerer": {"rate": 140, "volume": 1.0, "voice_index": 0},  # Slightly slow, male voice
+    "Adventurous Hero": {"rate": 170, "volume": 1.0, "voice_index": 0},  # Fast, male voice
+}
 
-#     voice_option = st.selectbox('Choose a voice', list(voice_options.keys()))
+    voice_option = st.selectbox('Choose a voice', list(voice_options.keys()))
 
     if st.button("Convert to Speech") and text:
-        audio_bytes = text_to_speech(text)
-        st.audio(audio_bytes, format="audio/mp3")
-        st.download_button(
-            label="Download Audio",
-            data=audio_bytes,
-            file_name="output.mp3",
-            mime="audio/mp3"
-        )
+        with st.spinner("Converting text to audio..."):
+            voice_settings = voice_options[voice_option]
+            audio_file_path = text_to_speech(text, voice_settings)
+            st.success("Conversion complete!")
+            st.audio(audio_file_path, format='audio/mp3')
+            st.download_button(
+                label="Download Audio",
+                data=open(audio_file_path, "rb"),
+                file_name="lecture_audio.mp3",
+                mime="audio/mp3"
+            )
+        os.remove(audio_file_path)  # Explicitly delete temporary audio file
         st.balloons()
 
 st.divider()
